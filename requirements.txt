@@ -10,4 +10,3 @@ torch==1.8.1
 torchvision==0.9.1
 typing-extensions==3.10.0.0
 urllib3==1.26.5
-tkinter==8.6.10
