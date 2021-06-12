@@ -1,6 +1,6 @@
 {
 	"maskrcnn_coco_labels": [
-    "__background__", "person", "bicycle", "car", "motorcycle", "airplane", "bus",
+    "background", "person", "bicycle", "car", "motorcycle", "airplane", "bus",
     "train", "truck", "boat", "traffic light", "fire hydrant", "N/A", "stop sign",
     "parking meter", "bench", "bird", "cat", "dog", "horse", "sheep", "cow",
     "elephant", "bear", "zebra", "giraffe", "N/A", "backpack", "umbrella", "N/A", "N/A",
@@ -13,14 +13,14 @@
     "microwave", "oven", "toaster", "sink", "refrigerator", "N/A", "book",
     "clock", "vase", "scissors", "teddy bear", "hair drier", "toothbrush"
     ],
+    "deeplab_pascal_labels": [
+    "background", "aeroplane", "bicycle", "boat", "bus", "car", "motorbike", "train",
+    "bottle", "chair", "dining table", "potted plant", "sofa", "TV/monitor",
+    "bird", "cat", "cow", "dog", "horse", "sheep", "person"
+    ],
     "face_labels": [ 
     "background", "skin", "nose", "eye_glasses", "l_eye", "r_eye", "l_brow",
     "r_brow", "l_ear", "r_ear", "mouth", "u_lip", "l_lip", "hair", "hat",
-    "ear_r", "neck_l", "neck", "cloth"
-    ],
-    "deeplab_pascal_labels": [
-    "aeroplane", "bicycle", "boat", "bus", "car", "motorbike", "train",
-    "bottle", "chair", "dining table", "potted plant", "sofa", "TV/monitor",
-    "bird", "cat", "cow", "dog", "horse", "sheep", "person"
+    "ear_r", "neck_lace", "neck", "cloth"
     ]
 }
