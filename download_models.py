@@ -7,6 +7,7 @@ def maskrcnn_coco(save_path='models/maskrcnn_restnet50_fpn.pt'):
     """ Download and save maskrcnn model
 
     Arguments:
+
     save_path: Path to save maskrcnn model. Must end with '.pt'. Default: 'models/maskrcnn_restnet50_fpn.pt'
     """
 
@@ -24,6 +25,7 @@ def deeplab_pascal(save_path='models/deeplab_restnet101.pt'):
     """ Download and save deeplab model
 
     Arguments:
+
     save_path: Path to save deeplab model. Must end with '.pt'. Default: 'models/deeplab_restnet101.pt'
     """
 
@@ -41,6 +43,7 @@ def face(save_path='models/face.pth'):
     """ Download and save face model
 
     Arguments:
+    
     save_path: Path to save face model. Must end with '.pth'. Default: 'models/face.pth'
     """
 
@@ -52,3 +55,15 @@ def face(save_path='models/face.pth'):
 
     gdd.download_file_from_google_drive(file_id='154JgKpzCPW82qINcVieuPH3fZ2e0P812',
                                         dest_path='models/face.pth')
+
+def download_all():
+    """ Function to download all models with their default names"""
+
+    print('Downloading maskrcnn model to models/maskrcnn_resnet50_fpn.pt')
+    maskrcnn_coco()
+
+    print('Downloading deeplab model to models/deeplab_restnet101.pt')
+    deeplab_pascal()
+
+    print('Downloading face model to models/face.pth')
+    face()

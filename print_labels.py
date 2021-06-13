@@ -47,4 +47,3 @@ def all():
 
     print('Face model labels')
     face()
-all()
