@@ -14,9 +14,9 @@
     "clock", "vase", "scissors", "teddy bear", "hair drier", "toothbrush"
     ],
     "deeplab_pascal_labels": [
-    "background", "aeroplane", "bicycle", "boat", "bus", "car", "motorbike", "train",
-    "bottle", "chair", "dining table", "potted plant", "sofa", "TV/monitor",
-    "bird", "cat", "cow", "dog", "horse", "sheep", "person"
+    "background", "aeroplane", "bicycle", "bird", "boat", "bottle", "bus", "car",
+	"cat", "chair", "cow", "dining table", "dog", "horse", "motorbike", "person",
+    "potted plant", "sheep", "sofa", "train", "TV/monitor"
     ],
     "face_labels": [ 
     "background", "skin", "nose", "eye_glasses", "l_eye", "r_eye", "l_brow",
