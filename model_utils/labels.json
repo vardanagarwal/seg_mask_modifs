@@ -21,6 +21,6 @@
     "face_labels": [ 
     "background", "skin", "left_eyebrow", "right_eyebrow", "left_eye", "right_eye",
     "eye_glasses", "left_ear", "right_ear", "ear_ring", "nose", "mouth", "upper_lip",
-    "lower_lip",  "neck", "necklace", "cloth", "hair", "hat"
+    "lower_lip",  "neck", "necklace", "cloth", "hair", "hat", "complete_face"
     ]
 }
