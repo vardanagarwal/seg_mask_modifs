@@ -6,13 +6,12 @@ from google_drive_downloader import GoogleDriveDownloader as gdd
 def maskrcnn_coco(save_path='models/maskrcnn_restnet50_fpn.pt'):
     """ Download and save maskrcnn model
 
-    Arguments:
-
-    save_path: Path to save maskrcnn model. Must end with '.pt'. Default: 'models/maskrcnn_restnet50_fpn.pt'
+    Args:
+        save_path (str, optional): Path to save maskrcnn model. Must end with '.pt' or '.pth'. Default: 'models/maskrcnn_restnet50_fpn.pt'
     """
 
-    if save_path[-3:] != '.pt':
-        raise ValueError('Save path should end with .pt')
+    if save_path[-3:] != '.pt' or save_path[-4:] != '.pth':
+        raise ValueError('Save path should end with .pt or .pth')
 
     if save_path == 'models/maskrcnn_restnet50_fpn.pt' and not os.path.exists('models'):
         os.makedirs('models')
@@ -24,13 +23,12 @@ def maskrcnn_coco(save_path='models/maskrcnn_restnet50_fpn.pt'):
 def deeplab_pascal(save_path='models/deeplab_restnet101.pt'):
     """ Download and save deeplab model
 
-    Arguments:
-
-    save_path: Path to save deeplab model. Must end with '.pt'. Default: 'models/deeplab_restnet101.pt'
+    Args:
+        save_path (str, optional): Path to save deeplab model. Must end with '.pt' or '.pth'. Default: 'models/deeplab_restnet101.pt'
     """
 
-    if save_path[-3:] != '.pt':
-        raise ValueError('Save path should end with .pt')
+    if save_path[-3:] != '.pt' or save_path[-4:] != '.pth':
+        raise ValueError('Save path should end with .pt or .pth')
 
     if save_path == 'models/deeplab_restnet101.pt' and not os.path.exists('models'):
         os.makedirs('models')
@@ -42,9 +40,8 @@ def deeplab_pascal(save_path='models/deeplab_restnet101.pt'):
 def face(save_path='models/face.pth'):
     """ Download and save face model
 
-    Arguments:
-    
-    save_path: Path to save face model. Must end with '.pth'. Default: 'models/face.pth'
+    Args:
+        save_path (str, optional): Path to save face model. Must end with '.pth'. Default: 'models/face.pth'
     """
 
     if save_path[-3:] != '.pth':
@@ -55,6 +52,12 @@ def face(save_path='models/face.pth'):
 
     gdd.download_file_from_google_drive(file_id='154JgKpzCPW82qINcVieuPH3fZ2e0P812',
                                         dest_path='models/face.pth')
+    
+    print('Downloading resnet18 backbone to torch cache')
+    import torch.utils.model_zoo as modelzoo
+
+    resnet18_url = 'https://download.pytorch.org/models/resnet18-5c106cde.pth'
+    state_dict = modelzoo.load_url(resnet18_url)
 
 def download_all():
     """ Function to download all models with their default names"""
