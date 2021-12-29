@@ -129,5 +129,5 @@ dmypy.json
 .pyre/
 
 # Models
-maskrcnn_resnet50_fpn.pt
-face_parsing.pth
+*.pt
+*.pth

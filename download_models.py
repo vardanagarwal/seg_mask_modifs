@@ -10,7 +10,7 @@ def maskrcnn_coco(save_path='models/maskrcnn_restnet50_fpn.pt'):
         save_path (str, optional): Path to save maskrcnn model. Must end with '.pt' or '.pth'. Default: 'models/maskrcnn_restnet50_fpn.pt'
     """
 
-    if save_path[-3:] != '.pt' or save_path[-4:] != '.pth':
+    if save_path[-3:] != '.pt' and save_path[-4:] != '.pth':
         raise ValueError('Save path should end with .pt or .pth')
 
     if save_path == 'models/maskrcnn_restnet50_fpn.pt' and not os.path.exists('models'):
@@ -27,7 +27,7 @@ def deeplab_pascal(save_path='models/deeplab_restnet101.pt'):
         save_path (str, optional): Path to save deeplab model. Must end with '.pt' or '.pth'. Default: 'models/deeplab_restnet101.pt'
     """
 
-    if save_path[-3:] != '.pt' or save_path[-4:] != '.pth':
+    if save_path[-3:] != '.pt' and save_path[-4:] != '.pth':
         raise ValueError('Save path should end with .pt or .pth')
 
     if save_path == 'models/deeplab_restnet101.pt' and not os.path.exists('models'):
@@ -44,7 +44,7 @@ def face(save_path='models/face.pth'):
         save_path (str, optional): Path to save face model. Must end with '.pth'. Default: 'models/face.pth'
     """
 
-    if save_path[-3:] != '.pth':
+    if save_path[-4:] != '.pth':
         raise ValueError('Save path should end with .pth')
 
     if save_path == 'models/face.pth' and not os.path.exists('models'):
