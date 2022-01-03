@@ -22,7 +22,7 @@ class mask_generator:
         self.model_preference = ['deeplabv3', 'maskrcnn', 'face']
         self.all_models = ['deeplabv3', 'maskrcnn', 'face']
         self.maskrcnn_model = False
-        self.deeplab_model = False
+        self.deeplabv3_model = False
         self.face_model = False
         self.threshold = threshold
         self.auto_init = auto_init
@@ -51,8 +51,8 @@ class mask_generator:
 
             model_path: Path to deeplabv3 model
         """
-        self.deeplab_model = torch.load(model_path)
-        self.deeplab_model.to(self.device).eval()
+        self.deeplabv3_model = torch.load(model_path)
+        self.deeplabv3_model.to(self.device).eval()
 
     def init_face(self, model_path='models/face.pth'):
         """ Function to initialize face model
@@ -103,10 +103,10 @@ class mask_generator:
 
         if model in self.model_preference:
             self.model_preference.remove(model)
-        self.model_preference.insert(model, pos)
+        self.model_preference.insert(pos, model)
 
-    def __maskrcnn_inference(self, img, labels):
-        """Private function to perform inference using MaskRCNN
+    def maskrcnn_inference(self, img, labels):
+        """Function to perform inference using MaskRCNN
         
         Arguments: 
         
@@ -120,7 +120,7 @@ class mask_generator:
         transform = transforms.Compose([
             transforms.ToTensor()
         ])
-        img_rgb = cv2.cvtColor()
+        img_rgb = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
         img_rgb = transform(img_rgb)
         img_rgb = img_rgb.unsqueeze(0).to(self.device)
 
@@ -138,12 +138,12 @@ class mask_generator:
 
         for i in range(len(scores)):
             if scores[i] > self.threshold and pred_labels[i] in labels:
-                output_mask = cv2.bitwise_or(output_mask, masks[i])
+                output_mask = cv2.bitwise_or(output_mask, np.array(masks[i], dtype=np.uint8))
 
         return output_mask
 
-    def __deeplabv3_inference(self, img, labels):
-        """Private function to perform inference using deeplabv3
+    def deeplabv3_inference(self, img, labels):
+        """Function to perform inference using deeplabv3
         
         Arguments: 
         
@@ -160,7 +160,7 @@ class mask_generator:
         img_pil = Image.fromarray(img)
         inp = trf(img_pil).unsqueeze(0).to(self.device)
         with torch.no_grad():
-            out = self.deeplab_model(inp)['out']
+            out = self.deeplabv3_model(inp)['out']
         output_mask = torch.argmax(out.squeeze(), dim=0).detach().cpu().numpy()
         pred_labels_ind = np.unique(output_mask)
         req_label_ind = [self.model_labels['deeplab_pascal_labels'].index(label) for label in labels]
@@ -169,12 +169,13 @@ class mask_generator:
             if pred_label_ind not in req_label_ind:
                 # converting all unwanted labels to 0
                 output_mask[output_mask[:] == pred_label_ind] = 0 
-
+        
+        output_mask = np.array(output_mask, dtype=np.uint8)
         _, output_mask = cv2.threshold(output_mask, 0, 255, cv2.THRESH_BINARY)
         return output_mask
 
-    def __face_inference(self, img, labels):
-        """Private function to perform inference using face model
+    def face_inference(self, img, labels):
+        """Function to perform inference using face model
         
         Arguments: 
         
@@ -189,7 +190,7 @@ class mask_generator:
                     transforms.ToTensor(),
                     transforms.Normalize((0.485, 0.456, 0.406), (0.229, 0.224, 0.225)),
                     ])
-        img_rgb = cv2.cvtColor()
+        img_rgb = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
         img_rgb = transform(img_rgb)
         img_rgb = img_rgb.unsqueeze(0).to(self.device)
         with torch.no_grad():
@@ -198,7 +199,7 @@ class mask_generator:
         output_mask = output_mask.astype(np.uint8)
         pred_labels_ind = np.unique(output_mask)
         req_label_ind = [self.model_labels['face_labels'].index(label) for label in labels]
-        if "complete_face" in labels:
+        if "face" in labels:
             # for complete face blurring adding all label indices except hat and cloth
             # and removing its index from list
             req_label_ind.extend([i for i in range(16)])
@@ -235,22 +236,43 @@ class mask_generator:
 
             model_labels = self.model_labels[self.label_mapping[use_model]]
             labels_skipped = list(set(labels) - set(model_labels))
-            print("Skipping labels:", *labels_skipped, ", not present in labels of model:", use_model)
+            if not len(labels_skipped):
+                print("Skipping labels:", *labels_skipped, ", not present in labels of model:", use_model)
             labels = list(set(labels).intersection(set(model_labels)))
 
+            # initialize model if auto_init is True and model is not initialized yet.
+            if self.auto_init and not eval("self." + use_model + "_model"):
+                eval("self.init_" + use_model)
             # using eval("self.__" + use_model + "_inference") to generate inference funtion
-            output_mask = eval("self.__" + use_model + "_inference")(img, labels)
+            output_mask = eval("self." + use_model + "_inference")(img, labels)
+            output_mask = cv2.threshold(output_mask, 0, 255, cv2.THRESH_BINARY)
             return output_mask
 
         output_mask = np.zeros((img.shape[:2]), dtype=np.uint8)
         for model in self.model_preference:
-            model_labels = self.model_labels[self.label_mapping[use_model]]
+            model_labels = self.model_labels[self.label_mapping[model]]
             labels_pass = list(set(labels).intersection(set(model_labels)))
             if len(labels_pass):
+                # initialize model if auto_init is True and model is not initialized yet.
+                if self.auto_init and not eval("self." + model + "_model"):
+                    eval("self.init_" + model)()
                 print("Inferencing labels:", *labels_pass, "with model:", model)
-                mask = eval("self.__" + model + "_inference")(img, labels_pass)
+                mask = eval("self." + model + "_inference")(img, labels_pass)
                 labels = list(set(labels) - set(labels_pass))
                 output_mask = cv2.bitwise_or(output_mask, mask)
 
-        print("Labels skipped:", *labels, ", not present in labels of any model")
+        if not len(labels):
+            print("Labels skipped:", *labels, ", not present in labels of any model")
+        _, output_mask = cv2.threshold(output_mask, 0, 255, cv2.THRESH_BINARY)
         return output_mask
+
+# Testing
+if __name__ == "__main__":
+    obj = mask_generator()
+    img = cv2.imread('images/city.jpg')
+    mask = obj.generate(img, ["backpack", "suitcase"])
+    # print(mask)
+    mask = cv2.bitwise_and(img, img, mask=mask)
+    cv2.imshow('mask', mask)
+    cv2.waitKey(0)
+    cv2.destroyAllWindows()
