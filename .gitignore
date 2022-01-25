@@ -131,3 +131,6 @@ dmypy.json
 # Models
 *.pt
 *.pth
+
+# Linting
+settings.json
