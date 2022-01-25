@@ -47,3 +47,9 @@ def all():
 
     print('Face model labels')
     face()
+
+if __name__ == '__main__':
+    maskrcnn_coco()
+    deeplab_pascal()
+    face()
+    all()

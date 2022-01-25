@@ -261,7 +261,7 @@ class mask_generator:
                 labels = list(set(labels) - set(labels_pass))
                 output_mask = cv2.bitwise_or(output_mask, mask)
 
-        if not len(labels):
+        if len(labels):
             print("Labels skipped:", *labels, ", not present in labels of any model")
         _, output_mask = cv2.threshold(output_mask, 0, 255, cv2.THRESH_BINARY)
         return output_mask
