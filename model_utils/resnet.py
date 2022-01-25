@@ -28,7 +28,7 @@ class BasicBlock(nn.Module):
                 nn.Conv2d(in_chan, out_chan,
                           kernel_size=1, stride=stride, bias=False),
                 nn.BatchNorm2d(out_chan),
-                )
+            )
 
     def forward(self, x):
         residual = self.conv1(x)
@@ -71,16 +71,17 @@ class Resnet18(nn.Module):
         x = self.maxpool(x)
 
         x = self.layer1(x)
-        feat8 = self.layer2(x) # 1/8
-        feat16 = self.layer3(feat8) # 1/16
-        feat32 = self.layer4(feat16) # 1/32
+        feat8 = self.layer2(x)  # 1/8
+        feat16 = self.layer3(feat8)  # 1/16
+        feat32 = self.layer4(feat16)  # 1/32
         return feat8, feat16, feat32
 
     def init_weight(self):
         state_dict = modelzoo.load_url(resnet18_url)
         self_state_dict = self.state_dict()
         for k, v in state_dict.items():
-            if 'fc' in k: continue
+            if 'fc' in k:
+                continue
             self_state_dict.update({k: v})
         self.load_state_dict(self_state_dict)
 
@@ -89,7 +90,7 @@ class Resnet18(nn.Module):
         for name, module in self.named_modules():
             if isinstance(module, (nn.Linear, nn.Conv2d)):
                 wd_params.append(module.weight)
-                if not module.bias is None:
+                if module.bias is not None:
                     nowd_params.append(module.bias)
             elif isinstance(module,  nn.BatchNorm2d):
                 nowd_params += list(module.parameters())
@@ -104,4 +105,3 @@ if __name__ == "__main__":
     print(out[1].size())
     print(out[2].size())
     net.get_params()
-
