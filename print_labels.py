@@ -2,6 +2,7 @@ import json
 
 data = json.load(open('model_utils/labels.json'))
 
+
 def maskrcnn_coco():
     """ Print maskrcnn labels
 
@@ -13,8 +14,9 @@ def maskrcnn_coco():
         if label != "N/A":
             new_labels.append(label)
     print(', '.join(new_labels))
-    
+
     return new_labels
+
 
 def deeplab_pascal():
     """ Print deeplab labels
@@ -26,6 +28,7 @@ def deeplab_pascal():
 
     return labels
 
+
 def face():
     """ Print face labels
 
@@ -35,6 +38,7 @@ def face():
     print(', '.join(labels))
 
     return labels
+
 
 def all():
     """ Print labels of all models"""
@@ -47,6 +51,7 @@ def all():
 
     print('Face model labels')
     face()
+
 
 if __name__ == '__main__':
     maskrcnn_coco()

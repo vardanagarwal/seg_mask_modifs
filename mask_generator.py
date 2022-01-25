@@ -8,15 +8,16 @@ from torchvision.transforms import transforms as transforms
 
 from model_utils.model_celebmask import BiSeNet
 
+
 class mask_generator:
     """ Class to generate masks using models"""
 
     def __init__(self, threshold=0.5, auto_init=True):
         """
-        Arguments: 
+        Arguments:
 
             threshold: Minimum required model threshold on inferencing.
-            auto_init: Auto initialize models whenever their label is seen. 
+            auto_init: Auto initialize models whenever their label is seen.
             Initializes from default path model stored to in download_models(). If path changed then initialize manually.
         """
         self.model_preference = ['deeplabv3', 'maskrcnn', 'face']
@@ -33,7 +34,7 @@ class mask_generator:
         self.label_mapping = {'deeplabv3': 'deeplab_pascal_labels',
                               'maskrcnn': 'maskrcnn_coco_labels',
                               'face': 'face_labels'}
-    
+
     def init_maskrcnn(self, model_path='models/maskrcnn_resnet50_fpn.pt'):
         """ Function to initialize maskrcnn model
 
@@ -66,7 +67,7 @@ class mask_generator:
             self.face_model.cuda()
             self.face_model.load_state_dict(torch.load(model_path))
         else:
-            self.face_model.load_state_dict(torch.load(model_path, map_location = 'cpu'))
+            self.face_model.load_state_dict(torch.load(model_path, map_location='cpu'))
         self.face_model.eval()
 
     def print_model_preference(self):
@@ -74,7 +75,7 @@ class mask_generator:
         print(self.model_preference)
 
     def set_model_preference(self, model=None, pos=0, model_list=None):
-        """ Function to set the model preference. 
+        """ Function to set the model preference.
         Only the models in model list will be used for mask generation.
         Pass either model along with its position or complete list containing models.
         If both are passed model_list will be preffered.
@@ -86,17 +87,17 @@ class mask_generator:
             model_list: List containing models
         """
 
-        if model_list == None and model == None:
+        if model_list is None and model is None:
             raise AttributeError("One of model or model_list needs to be passed")
 
-        if model_list != None:
+        if model_list is not None:
             for models in model_list:
                 if models not in self.all_models:
                     print("Wrong model name passed:", models)
                     raise ValueError
             self.model_preference = model_list
             return
-        
+
         if model not in self.all_models:
             print("Wrong model name passed:", model)
             raise ValueError
@@ -107,14 +108,14 @@ class mask_generator:
 
     def maskrcnn_inference(self, img, labels):
         """Function to perform inference using MaskRCNN
-        
-        Arguments: 
-        
+
+        Arguments:
+
             img: input image
             labels: labels to generate mask of.
-        
-        Returns: 
-        
+
+        Returns:
+
         output_mask: A combined mask of the labels provided"""
 
         transform = transforms.Compose([
@@ -126,13 +127,13 @@ class mask_generator:
 
         with torch.no_grad():
             outputs = self.maskrcnn_model(img_rgb)
-        
+
         # correct from code in docker
         scores = list(outputs[0]['scores'].detach().cpu().numpy())
         if len(outputs[0]['masks']) == 1:
-            masks = (outputs[0]['masks']>0.5)[0].detach().cpu().numpy()
+            masks = (outputs[0]['masks'] > 0.5)[0].detach().cpu().numpy()
         else:
-            masks = (outputs[0]['masks']>0.5).squeeze().detach().cpu().numpy()
+            masks = (outputs[0]['masks'] > 0.5).squeeze().detach().cpu().numpy()
         pred_labels = [self.model_labels['maskrcnn_coco_labels'][i] for i in outputs[0]['labels']]
         output_mask = np.zeros((img.shape[:2]), dtype=np.uint8)
 
@@ -144,52 +145,53 @@ class mask_generator:
 
     def deeplabv3_inference(self, img, labels):
         """Function to perform inference using deeplabv3
-        
-        Arguments: 
-        
+
+        Arguments:
+
             img: input image
             labels: labels to generate mask of.
-        
-        Returns: 
-        
+
+        Returns:
+
             output_mask: A combined mask of the labels provided"""
-        trf = transforms.Compose([transforms.ToTensor(), 
-                                  transforms.Normalize(mean = [0.485, 0.456, 0.406], 
-                                                       std = [0.229, 0.224, 0.225])
-                                 ])
+        trf = transforms.Compose([transforms.ToTensor(),
+                                  transforms.Normalize(mean=[0.485, 0.456, 0.406],
+                                                       std=[0.229, 0.224, 0.225])
+                                  ])
         img_pil = Image.fromarray(img)
         inp = trf(img_pil).unsqueeze(0).to(self.device)
         with torch.no_grad():
             out = self.deeplabv3_model(inp)['out']
         output_mask = torch.argmax(out.squeeze(), dim=0).detach().cpu().numpy()
         pred_labels_ind = np.unique(output_mask)
-        req_label_ind = [self.model_labels['deeplab_pascal_labels'].index(label) for label in labels]
+        req_label_ind = [self.model_labels['deeplab_pascal_labels'].index(
+            label) for label in labels]
 
         for pred_label_ind in pred_labels_ind:
             if pred_label_ind not in req_label_ind:
                 # converting all unwanted labels to 0
-                output_mask[output_mask[:] == pred_label_ind] = 0 
-        
+                output_mask[output_mask[:] == pred_label_ind] = 0
+
         output_mask = np.array(output_mask, dtype=np.uint8)
         _, output_mask = cv2.threshold(output_mask, 0, 255, cv2.THRESH_BINARY)
         return output_mask
 
     def face_inference(self, img, labels):
         """Function to perform inference using face model
-        
-        Arguments: 
-        
+
+        Arguments:
+
             img: input image
             labels: labels to generate mask of.
-        
-        Returns: 
-        
+
+        Returns:
+
             output_mask: A combined mask of the labels provided"""
-        
+
         transform = transforms.Compose([
-                    transforms.ToTensor(),
-                    transforms.Normalize((0.485, 0.456, 0.406), (0.229, 0.224, 0.225)),
-                    ])
+            transforms.ToTensor(),
+            transforms.Normalize((0.485, 0.456, 0.406), (0.229, 0.224, 0.225)),
+        ])
         img_rgb = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
         img_rgb = transform(img_rgb)
         img_rgb = img_rgb.unsqueeze(0).to(self.device)
@@ -206,15 +208,14 @@ class mask_generator:
             req_label_ind.append(17)
             req_label_ind.remove(19)
             req_label_ind = list(set(req_label_ind))
-        
+
         for pred_label_ind in pred_labels_ind:
             if pred_label_ind not in req_label_ind:
                 # converting all unwanted labels to 0
-                output_mask[output_mask[:] == pred_label_ind] = 0 
+                output_mask[output_mask[:] == pred_label_ind] = 0
 
         _, output_mask = cv2.threshold(output_mask, 0, 255, cv2.THRESH_BINARY)
         return output_mask
-
 
     def generate(self, img, labels, use_model=None):
         """ Function to generate masks for labels.
@@ -229,7 +230,7 @@ class mask_generator:
         Returns: mask of those labels.
         """
 
-        if use_model != None:
+        if use_model is not None:
             if use_model not in self.all_models:
                 print("use_model should be one of:", *self.all_models)
                 raise ValueError
@@ -237,7 +238,8 @@ class mask_generator:
             model_labels = self.model_labels[self.label_mapping[use_model]]
             labels_skipped = list(set(labels) - set(model_labels))
             if not len(labels_skipped):
-                print("Skipping labels:", *labels_skipped, ", not present in labels of model:", use_model)
+                print("Skipping labels:", *labels_skipped,
+                      ", not present in labels of model:", use_model)
             labels = list(set(labels).intersection(set(model_labels)))
 
             # initialize model if auto_init is True and model is not initialized yet.
@@ -265,6 +267,7 @@ class mask_generator:
             print("Labels skipped:", *labels, ", not present in labels of any model")
         _, output_mask = cv2.threshold(output_mask, 0, 255, cv2.THRESH_BINARY)
         return output_mask
+
 
 # Testing
 if __name__ == "__main__":
