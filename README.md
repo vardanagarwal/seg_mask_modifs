@@ -24,6 +24,6 @@ pip install -r requirements.txt
 ```
 
 ## References
-Face parsing: https://github.com/zllrunning/face-parsing.PyTorch
-Mask-RCNN: https://pytorch.org/vision/stable/_modules/torchvision/models/detection/mask_rcnn.html
-Deeplabv3: https://pytorch.org/vision/main/_modules/torchvision/models/segmentation/deeplabv3.html
+1. Face parsing: https://github.com/zllrunning/face-parsing.PyTorch
+2. Mask-RCNN: https://pytorch.org/vision/stable/_modules/torchvision/models/detection/mask_rcnn.html
+3. Deeplabv3: https://pytorch.org/vision/main/_modules/torchvision/models/segmentation/deeplabv3.html
