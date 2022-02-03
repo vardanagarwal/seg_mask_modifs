@@ -12,6 +12,7 @@ def invert_mask(mask):
     """
     return cv2.bitwise_not(mask)
 
+
 def combine_masks(mask, mask1, *masks):
     """Combine multiple masks
 
@@ -28,6 +29,7 @@ def combine_masks(mask, mask1, *masks):
         combined_mask = cv2.bitwise_or(combined_mask, mask)
     return combined_mask
 
+
 def intersection_masks(mask, mask1, *masks):
     """Intersection of multiple masks
 
@@ -43,6 +45,7 @@ def intersection_masks(mask, mask1, *masks):
     for mask in masks:
         intersection_mask = cv2.bitwise_and(intersection_mask, mask)
     return intersection_mask
+
 
 def dilate_mask(mask, kernel_size):
     """Dilate size of mask
