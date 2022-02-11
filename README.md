@@ -16,9 +16,11 @@ A package for easy generation of mask of different labels using multiple models 
 pip:
 ```
 pip install seg-mask-modifs
+pip install opencv-contrib-python>=4.5.4.60
+# if you install opencv-python then inpainting won't work
 ```
 
-Install the requirements from requirements.txt
+Cloning repo then install requirements:
 ```
 pip install -r requirements.txt
 ```
