@@ -42,8 +42,10 @@ class mask_generator:
 
             model_path: Path to maskrcnn model
         """
+        print('Initializing maskrcnn model')
         self.maskrcnn_model = torch.load(model_path)
         self.maskrcnn_model.to(self.device).eval()
+        print('Initialized maskrcnn model')
 
     def init_deeplabv3(self, model_path='models/deeplab_restnet101.pt'):
         """ Function to initialize deeplabv3 model
@@ -52,8 +54,10 @@ class mask_generator:
 
             model_path: Path to deeplabv3 model
         """
+        print('Initializing deeplabv3 model')
         self.deeplabv3_model = torch.load(model_path)
         self.deeplabv3_model.to(self.device).eval()
+        print('Initialized deeplabv3 model')
 
     def init_face(self, model_path='models/face.pth'):
         """ Function to initialize face model
@@ -62,6 +66,7 @@ class mask_generator:
 
             model_path: Path to face model
         """
+        print('Initializing face model')
         self.face_model = BiSeNet(n_classes=19)
         if self.gpu:
             self.face_model.cuda()
@@ -69,6 +74,7 @@ class mask_generator:
         else:
             self.face_model.load_state_dict(torch.load(model_path, map_location='cpu'))
         self.face_model.eval()
+        print('Face model initialized')
 
     def print_model_preference(self):
         """ Function to know the current model preference"""
