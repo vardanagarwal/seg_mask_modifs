@@ -81,6 +81,14 @@ img = cv2.imread('images/city.jpg')
 mask = mask_gen.generate(img=img, labels=['person', 'suitcase'])
 ```
 
+In the example above the test image passed is:
+
+![City](seg_mask_modifs/images/city.jpg)
+
+This generates the following output, using deeplabv3 for person and maskrcnn for suitcase:
+
+![Mask](seg_mask_modifs/images/city_mask.jpg)
+
 To generate mask use only one model, the use_model argument can be used.
 ```
 mask = mask_gen.generate(img=img, labels=['person', 'suitcase'], use_model='maskrcnn')
@@ -103,12 +111,24 @@ Note: if model is not found in the list, it will be ignored.
 ### Mask Utilities
 [Documentation page](https://vardanagarwal.github.io/seg_mask_modifs/mask_utils.html)
 
-Functions to combine, invert, dilate, etc. on masks. Take a look at the documentation for more details.
+Functions to combine, invert, dilate, etc. on multiple masks at once. Take a look at the documentation for more details.
 
 ### Mask Modifications
 [Documentation page](https://vardanagarwal.github.io/seg_mask_modifs/mask_modifier.html)
 
-Functions to modify masks. Take a look at the documentation for more details.
+Functions to modify masks. Includes various operations like blurring, pixelaing, replacing, inpainting the background and foreground among other operations. Take a look at the documentation for complete details. Some examples are given below.
+
+#### Blurring Foreground
+![Blurring](seg_mask_modifs/images/face_blur_fg.jpg)
+
+#### Drawing outline
+![outline](seg_mask_modifs/images/city_outline.jpg)
+
+#### Pixelate foreground
+![Pixelate](seg_mask_modifs/images/city_pixelate_fg.jpg)
+
+#### Grayscale background
+![Grayscale](seg_mask_modifs/images/city_grayscale_bg.jpg)
 
 ## References
 1. Face parsing: https://github.com/zllrunning/face-parsing.PyTorch
