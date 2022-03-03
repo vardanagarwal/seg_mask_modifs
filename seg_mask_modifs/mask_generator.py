@@ -279,9 +279,11 @@ class mask_generator:
 if __name__ == "__main__":
     obj = mask_generator()
     img = cv2.imread('images/city.jpg')
-    mask = obj.generate(img, ["backpack", "suitcase"])
+    mask = obj.generate(img, ["person", "suitcase"])
     # print(mask)
-    mask = cv2.bitwise_and(img, img, mask=mask)
+    # mask = cv2.bitwise_and(img, img, mask=mask)
+    cv2.imshow('img', img)
     cv2.imshow('mask', mask)
     cv2.waitKey(0)
     cv2.destroyAllWindows()
+    cv2.imwrite('images/city_mask.jpg', mask)

@@ -210,14 +210,18 @@ if __name__ == "__main__":
     # import numpy as np
     from mask_generator import mask_generator
     obj = mask_generator()
-    img = cv2.imread('images/images.jpeg')
+    img = cv2.imread('images/face.jpg')
     img = cv2.resize(img, None, fx=2, fy=2)
     mask = obj.generate(img, ["face"])
     h, w = img.shape[:2]
     # mask = np.zeros((h, w), dtype=np.uint8)
     # mask[int(h/3): int(2*h/3), int(w/3): int(2*w/3)] = 255
-    cv2.imshow('original', img)
-    cv2.imshow('mask', mask)
-    cv2.imshow('img', blur_fg(img, mask, (32, 32)))
-    cv2.waitKey(0)
-    cv2.destroyAllWindows()
+    # cv2.imshow('original', img)
+    # cv2.imshow('mask', mask)
+    # cv2.imshow('img', grayscale_bg(img, mask))
+    # cv2.waitKey(0)
+    # cv2.destroyAllWindows()
+    # cv2.imwrite('images/city_grayscale_bg.jpg', grayscale_bg(img, mask))
+    # cv2.imwrite('images/city_outline.jpg', outline(img, mask))
+    # cv2.imwrite('images/city_pixelate_fg.jpg', pixelate_fg(img, mask))
+    cv2.imwrite('images/face_blur_fg.jpg', blur_fg(img, mask, (15, 15)))
