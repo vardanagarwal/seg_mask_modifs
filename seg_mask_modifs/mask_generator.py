@@ -6,7 +6,8 @@ import torch
 from PIL import Image
 from torchvision.transforms import transforms as transforms
 
-from model_utils.model_celebmask import BiSeNet
+from seg_mask_modifs.model_utils.model_celebmask import BiSeNet
+from seg_mask_modifs.model_utils import labels
 
 
 class mask_generator:
@@ -29,7 +30,7 @@ class mask_generator:
         self.auto_init = auto_init
         self.device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
         self.gpu = torch.cuda.is_available()
-        self.model_labels = json.load(open('model_utils/labels.json'))
+        self.model_labels = labels.get_labels()
 
         self.label_mapping = {'deeplabv3': 'deeplab_pascal_labels',
                               'maskrcnn': 'maskrcnn_coco_labels',

@@ -1,7 +1,7 @@
 import json
+from seg_mask_modifs.model_utils import labels
 
-data = json.load(open('model_utils/labels.json'))
-
+data = labels.get_labels()
 
 def maskrcnn_coco():
     """ Print maskrcnn labels

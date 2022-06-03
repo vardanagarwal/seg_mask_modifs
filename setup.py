@@ -5,7 +5,7 @@ with open("README.md", "r", encoding="utf-8") as fh:
 
 setuptools.setup(
     name="seg_mask_modifs",
-    version="1.0.0",
+    version="1.0.1",
     author="Vardan Agarwal",
     author_email="vardanagarwal16@gmail.com",
     description="A package for easy generation of mask of different labels using multiple models"
@@ -21,7 +21,7 @@ setuptools.setup(
         "License :: OSI Approved :: MIT License",
         "Operating System :: OS Independent",
     ],
-    packages=['seg_mask_modifs'],
+    packages=setuptools.find_packages(),
     python_requires=">=3.6",
     install_requires=['torch>=1.10.1',
                       'torchvision>=0.11.2',

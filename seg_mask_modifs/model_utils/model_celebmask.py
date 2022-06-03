@@ -2,7 +2,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-from model_utils.resnet import Resnet18
+from seg_mask_modifs.model_utils.resnet import Resnet18
 # from modules.bn import InPlaceABNSync as BatchNorm2d
 
 
