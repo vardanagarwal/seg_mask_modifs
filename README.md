@@ -1,7 +1,5 @@
 # seg_mask_modifs
 
-[![Hits](https://hits.seeyoufarm.com/api/count/incr/badge.svg?url=https%3A%2F%2Fgithub.com%2Fvardanagarwal%2Fmask_modifs&count_bg=%2379C83D&title_bg=%23555555&icon=&icon_color=%23E7E7E7&title=hits&edge_flat=false)](https://hits.seeyoufarm.com)
-
 ## Description
 A package for easy generation of binary semantic mask of different labels using multiple models easily. Moreover, supports operations on the mask created for image editing.
 
