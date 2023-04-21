@@ -39,6 +39,13 @@ def face():
 
     return labels
 
+def sam():
+    """ Print sam labels
+
+    Returns: list of labels. Empty dictionary as it is a zero shot model"""
+
+    return []
+
 
 def all():
     """ Print labels of all models"""
