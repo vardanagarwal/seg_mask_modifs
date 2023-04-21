@@ -113,13 +113,14 @@ class mask_generator:
             self.model_preference.remove(model)
         self.model_preference.insert(pos, model)
 
-    def maskrcnn_inference(self, img, labels):
+    def maskrcnn_inference(self, img, labels, binary=True):
         """Function to perform inference using MaskRCNN
 
         Arguments:
 
             img: input image
-            labels: labels to generate mask of.
+            labels: labels to generate mask of. If empty, return masks for all labels.
+            binary: If False, returns an instance segmentation mask with different colors for each object else a binary mask
 
         Returns:
 
@@ -135,61 +136,82 @@ class mask_generator:
         with torch.no_grad():
             outputs = self.maskrcnn_model(img_rgb)
 
-        # correct from code in docker
         scores = list(outputs[0]['scores'].detach().cpu().numpy())
         if len(outputs[0]['masks']) == 1:
             masks = (outputs[0]['masks'] > 0.5)[0].detach().cpu().numpy()
         else:
             masks = (outputs[0]['masks'] > 0.5).squeeze().detach().cpu().numpy()
         pred_labels = [self.model_labels['maskrcnn_coco_labels'][i] for i in outputs[0]['labels']]
-        output_mask = np.zeros((img.shape[:2]), dtype=np.uint8)
 
-        for i in range(len(scores)):
-            if scores[i] > self.threshold and pred_labels[i] in labels:
-                output_mask = cv2.bitwise_or(output_mask, np.array(masks[i], dtype=np.uint8))
+        if not binary:
+            output_mask = np.zeros((*img.shape[:2], 3), dtype=np.uint8)
+            for i in range(len(scores)):
+                if scores[i] > self.threshold and (not labels or pred_labels[i] in labels):
+                    color_mask = np.random.randint(0, 256, (1, 3)).tolist()[0]
+                    for j in range(3):
+                        output_mask[:, :, j] += (masks[i] * color_mask[j]).astype(np.uint8)
+        else:
+            output_mask = np.zeros((img.shape[:2]), dtype=np.uint8)
+            for i in range(len(scores)):
+                if scores[i] > self.threshold and (not labels or pred_labels[i] in labels):
+                    output_mask = cv2.bitwise_or(output_mask, np.array(masks[i], dtype=np.uint8))
 
         return output_mask
 
-    def deeplabv3_inference(self, img, labels):
+
+    def deeplabv3_inference(self, img, labels, binary=True):
         """Function to perform inference using deeplabv3
 
         Arguments:
 
             img: input image
-            labels: labels to generate mask of.
+            labels: labels to generate mask of. If empty, return masks for all labels.
+            binary: If True (default), returns a binary mask. Otherwise, returns a mask with colors, with each color for a different object.
 
         Returns:
 
             output_mask: A combined mask of the labels provided"""
         trf = transforms.Compose([transforms.ToTensor(),
-                                  transforms.Normalize(mean=[0.485, 0.456, 0.406],
-                                                       std=[0.229, 0.224, 0.225])
-                                  ])
+                                transforms.Normalize(mean=[0.485, 0.456, 0.406],
+                                                    std=[0.229, 0.224, 0.225])
+                                ])
         img_pil = Image.fromarray(img)
         inp = trf(img_pil).unsqueeze(0).to(self.device)
         with torch.no_grad():
             out = self.deeplabv3_model(inp)['out']
         output_mask = torch.argmax(out.squeeze(), dim=0).detach().cpu().numpy()
         pred_labels_ind = np.unique(output_mask)
-        req_label_ind = [self.model_labels['deeplab_pascal_labels'].index(
-            label) for label in labels]
 
-        for pred_label_ind in pred_labels_ind:
-            if pred_label_ind not in req_label_ind:
-                # converting all unwanted labels to 0
-                output_mask[output_mask[:] == pred_label_ind] = 0
+        if labels:
+            req_label_ind = [self.model_labels['deeplab_pascal_labels'].index(label) for label in labels]
+            for pred_label_ind in pred_labels_ind:
+                if pred_label_ind not in req_label_ind:
+                    # converting all unwanted labels to background
+                    output_mask[output_mask[:] == pred_label_ind] = 0
+        else:
+            req_label_ind = pred_labels_ind
 
-        output_mask = np.array(output_mask, dtype=np.uint8)
-        _, output_mask = cv2.threshold(output_mask, 0, 255, cv2.THRESH_BINARY)
+        if binary:
+            output_mask = np.array(output_mask, dtype=np.uint8)
+            _, output_mask = cv2.threshold(output_mask, 0, 255, cv2.THRESH_BINARY)
+        else:
+            h, w = output_mask.shape
+            colored_mask = np.zeros((h, w, 3), dtype=np.uint8)
+            for label_ind in req_label_ind:
+                color = np.random.randint(0, 256, 3)
+                colored_mask[output_mask == label_ind] = color
+            output_mask = colored_mask
+
         return output_mask
 
-    def face_inference(self, img, labels):
+    def face_inference(self, img, labels, binary=True):
         """Function to perform inference using face model
 
         Arguments:
 
             img: input image
-            labels: labels to generate mask of.
+            labels: labels to generate mask of. If empty, return masks for all labels.
+            binary: If True (default), returns a binary mask. Otherwise, returns a mask with colors, with each color for a different object.
 
         Returns:
 
@@ -207,21 +229,31 @@ class mask_generator:
         output_mask = out.squeeze(0).cpu().numpy().argmax(0)
         output_mask = output_mask.astype(np.uint8)
         pred_labels_ind = np.unique(output_mask)
-        req_label_ind = [self.model_labels['face_labels'].index(label) for label in labels]
-        if "face" in labels:
-            # for complete face blurring adding all label indices except hat and cloth
-            # and removing its index from list
-            req_label_ind.extend([i for i in range(16)])
-            req_label_ind.append(17)
-            req_label_ind.remove(19)
-            req_label_ind = list(set(req_label_ind))
+
+        if labels:
+            req_label_ind = [self.model_labels['face_labels'].index(label) for label in labels]
+            if "face" in labels:
+                req_label_ind.extend([i for i in range(16)])
+                req_label_ind.append(17)
+                req_label_ind.remove(19)
+                req_label_ind = list(set(req_label_ind))
+        else:
+            req_label_ind = pred_labels_ind
 
         for pred_label_ind in pred_labels_ind:
             if pred_label_ind not in req_label_ind:
-                # converting all unwanted labels to 0
                 output_mask[output_mask[:] == pred_label_ind] = 0
 
-        _, output_mask = cv2.threshold(output_mask, 0, 255, cv2.THRESH_BINARY)
+        if binary:
+            _, output_mask = cv2.threshold(output_mask, 0, 255, cv2.THRESH_BINARY)
+        else:
+            h, w = output_mask.shape
+            colored_mask = np.zeros((h, w, 3), dtype=np.uint8)
+            for label_ind in req_label_ind:
+                color = np.random.randint(0, 256, 3)
+                colored_mask[output_mask == label_ind] = color
+            output_mask = colored_mask
+
         return output_mask
 
     def generate(self, img, labels, use_model=None):
@@ -274,6 +306,24 @@ class mask_generator:
             print("Labels skipped:", *labels, ", not present in labels of any model")
         _, output_mask = cv2.threshold(output_mask, 0, 255, cv2.THRESH_BINARY)
         return output_mask
+    
+    def delete_models(self, models_to_delete=None):
+        """Function to delete models from GPU memory.
+
+        Arguments:
+            models_to_delete: List of models to delete. If not provided or empty, all initialized models will be deleted.
+        """
+        if models_to_delete is None or not models_to_delete:
+            models_to_delete = self.all_models
+
+        for model in models_to_delete:
+            if eval("self." + model + "_model"):
+                print(f"Deleting {model} model from GPU memory.")
+                eval("self." + model + "_model.cpu()")  # Move the model to CPU memory
+                eval("del self." + model + "_model")  # Delete the model
+                exec("self." + model + "_model = False")  # Set the model reference to False
+                torch.cuda.empty_cache()  # Empty the GPU cache
+                print(f"Deleted {model} model from GPU memory.")
 
 
 # Testing
