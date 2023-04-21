@@ -1,6 +1,7 @@
 import os
 import torch
 import torchvision
+import wget
 from google_drive_downloader import GoogleDriveDownloader as gdd
 
 
@@ -65,6 +66,35 @@ def face(save_path='models/face.pth'):
     _ = modelzoo.load_url(resnet18_url)
 
 
+def sam(model_variant='default', save_path='models/sam.pth'):
+    """ Download and save SAM model
+
+    Args:
+        model_variant (str, optional): SAM model variant to download. Options: 'default', 'vit_h', 'vit_l', 'vit_b'.
+                                       Default: 'default' same as 'vit_h'
+        save_path (str, optional): Path to save SAM model. Must end with '.pth'. Default: 'models/sam.pth'
+    """
+
+    if save_path[-4:] != '.pth':
+        raise ValueError('Save path should end with .pth')
+
+    if save_path == 'models/sam.pth' and not os.path.exists('models'):
+        os.makedirs('models')
+
+    model_urls = {
+        'default': 'https://dl.fbaipublicfiles.com/segment_anything/sam_vit_h_4b8939.pth',
+        'vit_h': 'https://dl.fbaipublicfiles.com/segment_anything/sam_vit_h_4b8939.pth',
+        'vit_l': 'https://dl.fbaipublicfiles.com/segment_anything/sam_vit_l_0b3195.pth',
+        'vit_b': 'https://dl.fbaipublicfiles.com/segment_anything/sam_vit_b_01ec64.pth',
+    }
+
+    if model_variant not in model_urls:
+        raise ValueError("Invalid model variant. Options are 'default', 'vit_h', 'vit_l', 'vit_b'.")
+
+    url = model_urls[model_variant]
+    wget.download(url, save_path)
+    
+
 def download_all():
     """ Function to download all models with their default names"""
 
@@ -76,3 +106,6 @@ def download_all():
 
     print('Downloading face model to models/face.pth')
     face()
+
+    print('Downloading Segment-Anything model to models/sam.pth')
+    sam()
