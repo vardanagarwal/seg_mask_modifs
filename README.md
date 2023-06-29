@@ -3,6 +3,9 @@
 ## Description
 A package for easy generation of binary semantic mask of different labels using multiple models easily. Moreover, supports operations on the mask created for image editing.
 
+## Update
+Added support for SAM.
+
 #### Curent models and labels supported:
 - Deeplabv3 with pascal labels
 - Maskrcnn with coco labels
