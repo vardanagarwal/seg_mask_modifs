@@ -5,7 +5,7 @@ with open("README.md", "r", encoding="utf-8") as fh:
 
 setuptools.setup(
     name="seg_mask_modifs",
-    version="1.0.1",
+    version="1.2.0",
     author="Vardan Agarwal",
     author_email="vardanagarwal16@gmail.com",
     description="A package for easy generation of mask of different labels using multiple models"
