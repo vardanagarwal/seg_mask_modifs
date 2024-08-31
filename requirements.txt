@@ -1,6 +1,6 @@
 googledrivedownloader==0.4
 numpy==1.22.0
-opencv_contrib_python==4.5.4.60
+opencv_contrib_python==4.8.1.78
 Pillow==10.3.0
 torch==2.2.0
 torchvision==0.14.1
